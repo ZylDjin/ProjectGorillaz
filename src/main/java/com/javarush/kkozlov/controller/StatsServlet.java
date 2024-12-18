@@ -1,13 +1,12 @@
 package com.javarush.kkozlov.controller;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import util.Stats;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.javarush.kkozlov.util.Stats;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class StatsServlet extends HttpServlet {

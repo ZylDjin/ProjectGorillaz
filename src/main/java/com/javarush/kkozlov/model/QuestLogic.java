@@ -1,36 +1,35 @@
 package com.javarush.kkozlov.model;
 
 
-
 public class QuestLogic {
     private String currentState;
-    private boolean gameOver;
 
     public QuestLogic() {
         this.currentState = "start";
-        this.gameOver = false;
+    }
+
+    public String getCurrentState() {
+        return currentState;
+    }
+
+    public void setCurrentState(String state) {
+        this.currentState = state;
     }
 
     public String processAction(String action) {
-        if (currentState.equals("start")) {
-            if (action.equals("explore")) {
+        if ("start".equals(currentState)) {
+            if ("explore".equals(action)) {
                 currentState = "forest";
                 return "You enter a dark forest...";
-            } else if (action.equals("wait")) {
+            } else if ("wait".equals(action)) {
                 currentState = "village";
                 return "You decide to wait and find a friendly village.";
             }
-        } else if (currentState.equals("forest")) {
-            gameOver = true;
-            return "A monster attacks you. Game Over.";
-        } else if (currentState.equals("village")) {
-            gameOver = true;
-            return "The villagers help you find your way. You win!";
         }
         return "Unknown action.";
     }
 
     public boolean isGameOver() {
-        return gameOver;
+        return "forest".equals(currentState) || "village".equals(currentState);
     }
 }
