@@ -4,37 +4,39 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+/**
+ * Тесты для QuestLogic.
+ */
 public class QuestLogicTest {
 
     @Test
     public void testInitialState() {
         QuestLogic quest = new QuestLogic();
+        assertEquals("Начальное состояние.", quest.getCurrentStateDescription());
         assertFalse(quest.isGameOver());
     }
 
     @Test
     public void testExplorePath() {
         QuestLogic quest = new QuestLogic();
-        String result = quest.processAction("explore");
-        assertEquals("You enter a dark forest...", result);
+        String result = quest.proceed("explore");
+        assertEquals("Вы нашли дом с закрытой дверью.", result);
         assertFalse(quest.isGameOver());
     }
 
     @Test
     public void testWaitPath() {
         QuestLogic quest = new QuestLogic();
-        String result = quest.processAction("wait");
-        assertEquals("You decide to wait and find a friendly village.", result);
+        String result = quest.proceed("wait");
+        assertEquals("Вы остались на месте, и наступила ночь.", result);
         assertTrue(quest.isGameOver());
     }
 
     @Test
-    public void testGameOverAfterExplore() {
+    public void testGameReset() {
         QuestLogic quest = new QuestLogic();
-        quest.processAction("explore");
-        String result = quest.processAction("anything");
-        assertEquals("A monster attacks you. Game Over.", result);
-        assertTrue(quest.isGameOver());
+        quest.proceed("explore");
+        quest.reset();
+        assertEquals("Начальное состояние.", quest.getCurrentStateDescription());
     }
 }
