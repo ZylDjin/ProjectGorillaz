@@ -1,66 +1,38 @@
 package com.javarush.kkozlov.controller;
 
-import com.javarush.kkozlov.model.QuestLogic;
-
+import com.javarush.kkozlov.util.User;
+import com.javarush.kkozlov.service.QuestService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import java.io.IOException;
 
+@WebServlet(name = "Game", value = "/game")
 public class GameServlet extends HttpServlet {
 
+    private final QuestService questService = new QuestService();
+
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Получаем действие пользователя
-        String action = request.getParameter("action");
-
-        // Получаем текущую сессию
-        HttpSession session = request.getSession();
-
-        // Получаем объект логики квеста из сессии или создаем новый
-        QuestLogic questLogic = (QuestLogic) session.getAttribute("questLogic");
-        if (questLogic == null) {
-            questLogic = new QuestLogic();
-            session.setAttribute("questLogic", questLogic);
-        }
-
-        // Обрабатываем действие и получаем результат
-        String result = questLogic.proceed(action);
-
-        // Если игра завершена
-        if (questLogic.isGameOver()) {
-            session.setAttribute("message", "Игра окончена. Хотите начать заново?");
-            request.setAttribute("result", result);
-            request.getRequestDispatcher("/WEB-INF/views/result.jsp").forward(request, response);
-            return;
-        }
-
-        // Логика для разветвленных действий
-        if (result.contains("дом") || result.contains("шум")) { // Пример проверки ключевых слов
-            request.setAttribute("message", result);
-            request.getRequestDispatcher("/WEB-INF/views/branch.jsp").forward(request, response);
-        } else {
-            // Для остальных случаев отображаем основное игровое окно
-            request.setAttribute("result", result);
-            request.getRequestDispatcher("/WEB-INF/views/game.jsp").forward(request, response);
-        }
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("/WEB-INF/index.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Перенаправляем GET-запросы на старт игры
-        HttpSession session = request.getSession();
-        QuestLogic questLogic = (QuestLogic) session.getAttribute("questLogic");
-        if (questLogic == null) {
-            questLogic = new QuestLogic();
-            session.setAttribute("questLogic", questLogic);
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+
+        //Checking or Creating User
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            user = new User();
+            session.setAttribute("user", user);
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/game.jsp").forward(request, response);
+        questService.manageQuest(user, req, session);
+
+        req.getRequestDispatcher("/WEB-INF/game.jsp").forward(req, resp);
     }
 }
-
-

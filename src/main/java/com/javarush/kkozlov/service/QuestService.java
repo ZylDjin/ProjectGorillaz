@@ -1,53 +1,52 @@
 package com.javarush.kkozlov.service;
 
-import com.javarush.kkozlov.model.QuestLogic;
+import com.javarush.kkozlov.util.Quest;
+import com.javarush.kkozlov.util.QuestStage;
+import com.javarush.kkozlov.util.State;
+import com.javarush.kkozlov.util.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
-/**
- * Сервис для управления игровой логикой.
- */
 public class QuestService {
 
-    private final QuestLogic questLogic;
+    public void manageQuest(User user, HttpServletRequest req, HttpSession session) {
+        String questId = req.getParameter("questId");
+        String stageId = req.getParameter("stageId");
 
-    public QuestService(QuestLogic questLogic) {
-        this.questLogic = questLogic;
-    }
+        //Getting quest
+        Quest quest = user.getQuest(questId);
+        session.setAttribute("quest", quest);
 
-    /**
-     * Обрабатывает действие игрока.
-     *
-     * @param action Действие пользователя.
-     * @return Результат действия.
-     */
-    public String processAction(String action) {
-        if (questLogic.isGameOver()) {
-            return "Игра завершена. Начните заново.";
+        //Moving to next stage
+        QuestStage nextStage = quest.getStage(stageId);
+        session.setAttribute("stage", nextStage);
+
+        //Checking Quest State
+        if (nextStage.getState() == State.WON || nextStage.getState() == State.LOST) {
+            updateQuestStats(quest, nextStage);
+            session.setAttribute("generalStats", quest.calculateGeneralStatistics(user));
         }
-        return questLogic.proceed(action);
+
+        handleUserInput(nextStage, session, req);
+
     }
 
-    /**
-     * Проверяет, завершена ли игра.
-     *
-     * @return true, если игра завершена.
-     */
-    public boolean isGameOver() {
-        return questLogic.isGameOver();
+    private void handleUserInput(QuestStage nextStage, HttpSession session, HttpServletRequest req) {
+        if (nextStage.getId() == 0) {
+            session.setAttribute("userInput", null);
+        } else {
+            String userInput = req.getParameter("userInput");
+            if (userInput != null) {
+                session.setAttribute("userInput", userInput);
+            }
+        }
     }
 
-    /**
-     * Получает описание текущего состояния.
-     *
-     * @return Описание состояния.
-     */
-    public String getStateDescription() {
-        return questLogic.getCurrentStateDescription();
-    }
-
-    /**
-     * Сбрасывает состояние игры.
-     */
-    public void resetGame() {
-        questLogic.reset();
+    private void updateQuestStats(Quest quest, QuestStage nextStage) {
+        if (nextStage.getState() == State.WON) {
+            quest.incrementWins();
+        } else if (nextStage.getState() == State.LOST) {
+            quest.incrementLoses();
+        }
     }
 }
